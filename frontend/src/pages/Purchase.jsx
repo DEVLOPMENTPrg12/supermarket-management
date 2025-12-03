@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 // Assuming you have Heroicons installed for icons; if not, you can install it via npm install @heroicons/react
 import { PlusIcon, TrashIcon, DocumentPlusIcon, PencilIcon } from "@heroicons/react/24/outline";
@@ -26,6 +28,7 @@ const Purchases = () => {
       setPurchases(res.data);
     } catch (err) {
       console.error(err);
+      toast.error("Error fetching purchases!");
     }
   };
 
@@ -37,6 +40,7 @@ const Purchases = () => {
       setSuppliers(res.data);
     } catch (err) {
       console.error(err);
+      toast.error("Error fetching suppliers!");
     }
   };
 
@@ -48,6 +52,7 @@ const Purchases = () => {
       setProducts(res.data);
     } catch (err) {
       console.error(err);
+      toast.error("Error fetching products!");
     }
   };
 
@@ -57,11 +62,11 @@ const Purchases = () => {
     setStatus(purchase.status || "unpaid");
     setNote(purchase.note || "");
     setItems(
-      purchase.items.map((i) => ({
-        product: i.product._id,
-        quantity: i.quantity,
-        price: i.price,
-      }))
+      purchase.items?.map((i) => ({
+        product: i.product?._id || "",
+        quantity: i.quantity || 1,
+        price: i.price || 0,
+      })) || [{ product: "", quantity: 1, price: 0 }]
     );
   };
 
@@ -88,6 +93,7 @@ const Purchases = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
+      toast.success("Purchase updated successfully!");
       fetchPurchases();
 
       // reset form
@@ -98,7 +104,7 @@ const Purchases = () => {
       setNote("");
     } catch (err) {
       console.error(err);
-      alert("Error updating purchase!");
+      toast.error("Error updating purchase!");
     }
   };
 
@@ -125,7 +131,7 @@ const Purchases = () => {
   // Total calculation
   const calculateTotal = () => {
     return items.reduce(
-      (sum, i) => sum + i.quantity * i.price,
+      (sum, i) => sum + (i.quantity || 0) * (i.price || 0),
       0
     );
   };
@@ -151,6 +157,7 @@ const Purchases = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
+      toast.success("Purchase created successfully!");
       fetchPurchases();
 
       // reset
@@ -161,7 +168,7 @@ const Purchases = () => {
 
     } catch (err) {
       console.error(err);
-      alert("Error creating purchase!");
+      toast.error("Error creating purchase!");
     }
   };
 
@@ -180,9 +187,11 @@ const Purchases = () => {
       await axios.delete(`http://localhost:5000/api/purchases/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      toast.success("Purchase deleted successfully!");
       fetchPurchases();
     } catch (err) {
       console.error(err);
+      toast.error("Error deleting purchase!");
     }
   };
 
@@ -214,7 +223,7 @@ const Purchases = () => {
                 <option value="">Select Supplier</option>
                 {suppliers.map((s) => (
                   <option key={s._id} value={s._id}>
-                    {s.name}
+                    {s.name || "N/A"}
                   </option>
                 ))}
               </select>
@@ -267,7 +276,7 @@ const Purchases = () => {
                     <option value="">Choose product</option>
                     {products.map((prod) => (
                       <option key={prod._id} value={prod._id}>
-                        {prod.name}
+                        {prod.name || "N/A"}
                       </option>
                     ))}
                   </select>
@@ -355,15 +364,15 @@ const Purchases = () => {
               <tbody className="bg-white divide-y divide-green-200">
                 {purchases.map((p, index) => (
                   <tr key={p._id} className={`hover:bg-green-50 transition-colors duration-150 ${index % 2 === 0 ? 'bg-white' : 'bg-green-25'}`}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-900">{p.supplier?.name}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-900">{p.supplier?.name || "N/A"}</td>
                     <td className="px-6 py-4 text-sm text-green-600">
-                      {p.items.map((item) => (
-                        <div key={item.product._id} className="mb-1">
-                          <span className="font-medium">{item.product.name}</span> - Qty: {item.quantity}, Price: {item.price} MAD
+                      {p.items?.map((item) => (
+                        <div key={item.product?._id || Math.random()}>
+                          <span>{item.product?.name || "Unknown Product"}</span> - Qty: {item.quantity || 0}, Price: {item.price || 0} MAD
                         </div>
-                      ))}
+                      )) || "No items"}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-900">{p.totalAmount} MAD</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-900">{p.totalAmount || 0} MAD</td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                         p.status === "paid"
@@ -372,10 +381,10 @@ const Purchases = () => {
                           ? "bg-yellow-100 text-yellow-800"
                           : "bg-red-100 text-red-800"
                       }`}>
-                        {p.status}
+                        {p.status || "N/A"}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600">{new Date(p.createdAt).toLocaleDateString()}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600">{p.createdAt ? new Date(p.createdAt).toLocaleDateString() : "N/A"}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex space-x-2">
                         <button
@@ -401,6 +410,7 @@ const Purchases = () => {
           </div>
         </div>
       </div>
+      <ToastContainer />
     </div>
   );
 };

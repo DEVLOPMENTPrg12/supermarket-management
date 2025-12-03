@@ -6,6 +6,7 @@ import autoTable from "jspdf-autotable";
 
 // Assuming you have Heroicons installed for icons; if not, you can install it via npm install @heroicons/react
 import { MagnifyingGlassIcon, PlusIcon, PencilIcon, TrashIcon, DocumentArrowDownIcon, EyeIcon, EyeSlashIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { toast, ToastContainer } from "react-toastify";
 
 const Product = () => {
   const [products, setProducts] = useState([]);
@@ -156,28 +157,29 @@ const Product = () => {
   const handleAddProduct = async () => {
     if (!newProduct.name || !newProduct.price || !newProduct.category)
       return alert("Please fill required fields!");
-    try {
-      await axios.post("http://localhost:5000/api/products", newProduct, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setShowAddModal(false);
-      fetchProducts();
-      setNewProduct({
-        name: "",
-        description: "",
-        price: "",
-        category: "",
-        quantity: 0,
-        image: "",
-        SKU: "",
-        status: "active",
-        brand: "",
-        tags: [],
-      });
-    } catch (err) {
-      console.log(err);
-      alert("Error Adding Product!");
-    }
+   try {
+  await axios.post("http://localhost:5000/api/products", newProduct, { headers:{ Authorization: `Bearer ${token}` } });
+  toast.success("Product added successfully!");
+  setShowAddModal(false);
+  fetchProducts();
+  setNewProduct({
+    name: "",
+    description: "",
+    price: "",
+    category: "",
+    quantity: 0,
+    image: "",
+    SKU: "",
+    status: "active",
+    brand: "",
+    tags: [],
+  });
+} catch (err) {
+  console.log(err);
+  const errorMessage = err.response?.data?.message || "Error adding product!";
+  toast.error(errorMessage);
+}
+
   };
 
   const openEditModal = (p) => {
@@ -199,30 +201,30 @@ const Product = () => {
 
   const handleEditProduct = async () => {
     try {
-      await axios.put(
-        `http://localhost:5000/api/products/${editProduct._id}`,
-        editProduct,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setShowEditModal(false);
-      fetchProducts();
-    } catch (err) {
-      console.log(err);
-      alert("Error Updating Product!");
-    }
+  await axios.put(`http://localhost:5000/api/products/${editProduct._id}`, editProduct, { headers: { Authorization: `Bearer ${token}` } });
+  toast.success("Product updated successfully!");
+  setShowEditModal(false);
+  fetchProducts();
+} catch (err) {
+  console.log(err);
+  const errorMessage = err.response?.data?.message || "Error updating product!";
+  toast.error(errorMessage);
+}
+
   };
 
   const deleteProduct = async (id) => {
     if (!window.confirm("Are you sure?")) return;
     try {
-      await axios.delete(`http://localhost:5000/api/products/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      fetchProducts();
-    } catch (err) {
-      console.log(err);
-      alert("Error Deleting Product!");
-    }
+  await axios.delete(`http://localhost:5000/api/products/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+  toast.success("Product deleted successfully!");
+  fetchProducts();
+} catch (err) {
+  console.log(err);
+  const errorMessage = err.response?.data?.message || "Error deleting product!";
+  toast.error(errorMessage);
+}
+
   };
 
   // ------------------ RENDER ------------------
@@ -406,6 +408,8 @@ const Product = () => {
           />
         )}
       </div>
+      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover />
+
     </div>
   );
 };
@@ -577,5 +581,4 @@ const ProductModal = ({ product, setProduct, categories, onClose, onSave, title 
     </div>
   </div>
 );
-
 

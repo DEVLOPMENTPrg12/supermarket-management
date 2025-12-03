@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { PlusIcon, PencilIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
 const API = "http://localhost:5000/api";
@@ -26,13 +28,16 @@ const Clients = () => {
       setClients(res.data);
     } catch (err) {
       console.log(err.response?.data || err);
-      if (err.response?.status === 401) alert("Unauthorized! Please login again.");
+      if (err.response?.status === 401) {
+        toast.error("Unauthorized! Please login again.");
+      } else {
+        toast.error("Error fetching clients!");
+      }
     }
   };
 
   useEffect(() => {
-console.log(token);
-
+    console.log(token);
     fetchClients();
   }, []);
 
@@ -43,10 +48,10 @@ console.log(token);
 
       if (editingId) {
         await axios.put(`${API}/clients/${editingId}`, payload, config);
-        alert("Client updated successfully!");
+        toast.success("Client updated successfully!");
       } else {
         await axios.post(`${API}/clients`, payload, config);
-        alert("Client added successfully!");
+        toast.success("Client added successfully!");
       }
 
       setName("");
@@ -58,14 +63,14 @@ console.log(token);
     } catch (err) {
       console.log(err.response?.data || err);
       const errorMessage = err.response?.data?.error || err.response?.data?.message || "Error saving client";
-      alert(errorMessage);
+      toast.error(errorMessage);
     }
   };
 
   // ---------------- Edit client ----------------
   const handleEdit = (client) => {
     setEditingId(client._id);
-    setName(client.name);
+    setName(client.name || "");
     setEmail(client.email || "");
     setPhone(client.phone || "");
     setAddress(client.address || "");
@@ -76,10 +81,15 @@ console.log(token);
     if (!window.confirm("Are you sure?")) return;
     try {
       await axios.delete(`${API}/clients/${id}`, config);
+      toast.success("Client deleted successfully!");
       fetchClients();
     } catch (err) {
       console.log(err.response?.data || err);
-      if (err.response?.status === 401) alert("Unauthorized! Please login again.");
+      if (err.response?.status === 401) {
+        toast.error("Unauthorized! Please login again.");
+      } else {
+        toast.error("Error deleting client!");
+      }
     }
   };
 
@@ -182,10 +192,10 @@ console.log(token);
               <tbody className="bg-white divide-y divide-green-200">
                 {clients.map((c, index) => (
                   <tr key={c._id} className={`hover:bg-green-50 transition-colors duration-150 ${index % 2 === 0 ? 'bg-white' : 'bg-green-25'}`}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-900">{c.name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600">{c.email}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600">{c.phone}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600">{c.address}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-900">{c.name || "N/A"}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600">{c.email || "N/A"}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600">{c.phone || "N/A"}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600">{c.address || "N/A"}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex space-x-2">
                         <button
@@ -211,6 +221,7 @@ console.log(token);
           </div>
         </div>
       </div>
+      <ToastContainer />
     </div>
   );
 };

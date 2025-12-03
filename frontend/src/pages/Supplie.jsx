@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 // Assuming you have Heroicons installed for icons; if not, you can install it via npm install @heroicons/react
 import { PlusIcon, PencilIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/outline';
@@ -28,7 +30,7 @@ const Supplier = () => {
       setSuppliers(res.data);
     } catch (err) {
       console.log(err);
-      alert("Error fetching suppliers");
+      toast.error("Error fetching suppliers!");
     }
   };
 
@@ -46,6 +48,7 @@ const Supplier = () => {
           editSupplier,
           { headers: { Authorization: `Bearer ${token}` } }
         );
+        toast.success("Supplier updated successfully!");
       } else {
         // CREATE
         await axios.post(
@@ -53,6 +56,7 @@ const Supplier = () => {
           newSupplier,
           { headers: { Authorization: `Bearer ${token}` } }
         );
+        toast.success("Supplier added successfully!");
       }
       setShowModal(false);
       setEditSupplier(null);
@@ -67,12 +71,20 @@ const Supplier = () => {
       fetchSuppliers();
     } catch (err) {
       console.log(err);
-      alert("Error saving supplier");
+      toast.error("Error saving supplier!");
     }
   };
 
   const handleEdit = (supplier) => {
-    setEditSupplier(supplier);
+    setEditSupplier({
+      _id: supplier._id,
+      name: supplier.name || "",
+      phone: supplier.phone || "",
+      email: supplier.email || "",
+      address: supplier.address || "",
+      company: supplier.company || "",
+      balance: supplier.balance || 0,
+    });
     setShowModal(true);
   };
 
@@ -82,10 +94,11 @@ const Supplier = () => {
       await axios.delete(`http://localhost:5000/api/suppliers/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      toast.success("Supplier deleted successfully!");
       fetchSuppliers();
     } catch (err) {
       console.log(err);
-      alert("Error deleting supplier");
+      toast.error("Error deleting supplier!");
     }
   };
 
@@ -125,12 +138,12 @@ const Supplier = () => {
               <tbody className="bg-white divide-y divide-green-200">
                 {suppliers.map((s, index) => (
                   <tr key={s._id} className={`hover:bg-green-50 transition-colors duration-150 ${index % 2 === 0 ? 'bg-white' : 'bg-green-25'}`}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-900">{s.name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600">{s.phone}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600">{s.email}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600">{s.address}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600">{s.company}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-green-900 font-semibold">{s.balance}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-900">{s.name || "N/A"}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600">{s.phone || "N/A"}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600">{s.email || "N/A"}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600">{s.address || "N/A"}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600">{s.company || "N/A"}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-green-900 font-semibold">{s.balance !== undefined ? s.balance : "N/A"}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex space-x-2">
                         <button
@@ -170,6 +183,7 @@ const Supplier = () => {
           />
         )}
       </div>
+      <ToastContainer />
     </div>
   );
 };
@@ -197,7 +211,7 @@ const SupplierModal = ({ supplier, setSupplier, onClose, onSave, title }) => (
             type="text"
             placeholder="Supplier Name"
             className="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
-            value={supplier.name}
+            value={supplier.name || ""}
             onChange={(e) => setSupplier({ ...supplier, name: e.target.value })}
           />
         </div>
@@ -207,7 +221,7 @@ const SupplierModal = ({ supplier, setSupplier, onClose, onSave, title }) => (
             type="text"
             placeholder="Phone Number"
             className="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
-            value={supplier.phone}
+            value={supplier.phone || ""}
             onChange={(e) => setSupplier({ ...supplier, phone: e.target.value })}
           />
         </div>
@@ -217,7 +231,7 @@ const SupplierModal = ({ supplier, setSupplier, onClose, onSave, title }) => (
             type="email"
             placeholder="Email Address"
             className="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
-            value={supplier.email}
+            value={supplier.email || ""}
             onChange={(e) => setSupplier({ ...supplier, email: e.target.value })}
           />
         </div>
@@ -227,7 +241,7 @@ const SupplierModal = ({ supplier, setSupplier, onClose, onSave, title }) => (
             type="text"
             placeholder="Address"
             className="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
-            value={supplier.address}
+            value={supplier.address || ""}
             onChange={(e) => setSupplier({ ...supplier, address: e.target.value })}
           />
         </div>
@@ -237,7 +251,7 @@ const SupplierModal = ({ supplier, setSupplier, onClose, onSave, title }) => (
             type="text"
             placeholder="Company Name"
             className="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
-            value={supplier.company}
+            value={supplier.company || ""}
             onChange={(e) => setSupplier({ ...supplier, company: e.target.value })}
           />
         </div>
@@ -247,7 +261,7 @@ const SupplierModal = ({ supplier, setSupplier, onClose, onSave, title }) => (
             type="number"
             placeholder="Balance"
             className="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
-            value={supplier.balance}
+            value={supplier.balance || 0}
             onChange={(e) => setSupplier({ ...supplier, balance: e.target.value })}
           />
         </div>

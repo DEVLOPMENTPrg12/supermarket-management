@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import API from "../services/api";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 // Assuming you have Heroicons installed for icons; if not, you can install it via npm install @heroicons/react
 import { PlusIcon, PencilIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/outline';
@@ -21,7 +23,7 @@ const Categories = () => {
       setCategories(res.data);
     } catch (err) {
       console.log(err);
-      alert("Error fetching categories!");
+      toast.error("Error fetching categories!");
     }
   };
 
@@ -31,33 +33,41 @@ const Categories = () => {
 
   // ---------------- ADD ----------------
   const handleAddCategory = async () => {
-    if (!newCategory.name) return alert("Please enter category name!");
+    if (!newCategory.name) {
+      toast.warn("Please enter category name!");
+      return;
+    }
     try {
       await API.post("/categories", newCategory, { headers: { Authorization: `Bearer ${token}` } });
+      toast.success("Category added successfully!");
       setShowAddModal(false);
       setNewCategory({ name: "" });
       fetchCategories();
     } catch (err) {
       console.log(err);
-      alert("Error adding category!");
+      toast.error("Error adding category!");
     }
   };
 
   // ---------------- EDIT ----------------
   const openEditModal = (c) => {
-    setEditCategory({ _id: c._id, name: c.name });
+    setEditCategory({ _id: c._id, name: c.name || "" });
     setShowEditModal(true);
   };
 
   const handleEditCategory = async () => {
-    if (!editCategory.name) return alert("Please enter category name!");
+    if (!editCategory.name) {
+      toast.warn("Please enter category name!");
+      return;
+    }
     try {
       await API.put(`/categories/${editCategory._id}`, editCategory, { headers: { Authorization: `Bearer ${token}` } });
+      toast.success("Category updated successfully!");
       setShowEditModal(false);
       fetchCategories();
     } catch (err) {
       console.log(err);
-      alert("Error updating category!");
+      toast.error("Error updating category!");
     }
   };
 
@@ -66,10 +76,11 @@ const Categories = () => {
     if (!window.confirm("Are you sure?")) return;
     try {
       await API.delete(`/categories/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+      toast.success("Category deleted successfully!");
       fetchCategories();
     } catch (err) {
       console.log(err);
-      alert("Error deleting category!");
+      toast.error("Error deleting category!");
     }
   };
 
@@ -103,7 +114,7 @@ const Categories = () => {
               <tbody className="bg-white divide-y divide-green-200">
                 {categories.map((c, index) => (
                   <tr key={c._id} className={`hover:bg-green-50 transition-colors duration-150 ${index % 2 === 0 ? 'bg-white' : 'bg-green-25'}`}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-900">{c.name}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-900">{c.name || "N/A"}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex space-x-2">
                         <button
@@ -150,6 +161,7 @@ const Categories = () => {
           />
         )}
       </div>
+      <ToastContainer />
     </div>
   );
 };
@@ -177,7 +189,7 @@ const CategoryModal = ({ title, category, setCategory, onClose, onSave }) => (
             type="text"
             placeholder="Enter category name"
             className="w-full px-3 py-2 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
-            value={category.name}
+            value={category.name || ""}
             onChange={(e) => setCategory({ ...category, name: e.target.value })}
           />
         </div>

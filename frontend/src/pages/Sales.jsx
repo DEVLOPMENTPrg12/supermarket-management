@@ -11,6 +11,9 @@ import {
   EyeIcon,
 } from "@heroicons/react/24/outline";
 import QrScanner from "qr-scanner";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 
 const Sales = () => {
   const [products, setProducts] = useState([]);
@@ -158,7 +161,7 @@ const Sales = () => {
   // Create Sale + Print invoice only
   // -------------------------
  const handleSale = async () => {
-  if (!client) return alert("اختر العميل!");
+  if (!client) return alert("اختر العميل!"); 
   if (cart.length === 0) return alert("السلة فارغة!");
 
   const payload = {
@@ -175,14 +178,14 @@ const Sales = () => {
     const saleId = res.data?.sale?._id;
     if (!saleId) {
       console.log("Invalid response:", res.data);
-      return alert("خطأ: لم يتم استلام الفاتورة!");
+      return toast.error("خطأ: لم يتم استلام الفاتورة!");
     }
 
     printBill(saleId);
     setCart([]);
     setClient("");
 
-    alert("تم إنشاء البيع!");
+    toast.success("تم إنشاء البيع!");
   } catch (err) {
     console.log("Sale error:", err.response?.data || err.message);
 
@@ -191,7 +194,7 @@ const Sales = () => {
       return alert(err.response.data.message);
     }
 
-    alert("خطأ أثناء حفظ البيع");
+    toast.error("خطأ أثناء حفظ البيع");
   }
 };
 
@@ -278,9 +281,9 @@ const Sales = () => {
     try {
       await API.delete(`/sales/${id}`);
       setSales(sales.filter((s) => s._id !== id));
-      alert("تم حذف البيع بنجاح");
+      toast.success("تم حذف البيع بنجاح");
     } catch (err) {
-      alert("خطأ أثناء حذف البيع");
+      toast.error("خطأ أثناء حذف البيع");
     }
   };
 
@@ -498,6 +501,8 @@ const Sales = () => {
               </tbody>
             </table>
           </div>
+                <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover />
+          
         </div>
 
         <video id="scanner" className="hidden"></video>
